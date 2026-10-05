@@ -277,7 +277,7 @@ body {
 (function () {
     "use strict";
 
-    var VERSION = "2.0";
+    var VERSION = "2.1";
 
     // ---------- Ошибки: показываем прямо на экране ----------
     window.addEventListener("error", function (e) {
@@ -287,10 +287,10 @@ body {
         box.textContent = "Ошибка: " + e.message + " (строка " + e.lineno + ")";
     });
 
-    // ---------- Хранилище (ключи не менялись) ----------
-    var KEY_COINS = "saysei_coins";
-    var KEY_COLLECTION = "saysei_collection";
-    var KEY_DAILY = "saysei_daily_reward";
+    // ---------- Хранилище (новые ключи v2: чистый старт) ----------
+    var KEY_COINS = "saysei_v2_coins";
+    var KEY_COLLECTION = "saysei_v2_collection";
+    var KEY_DAILY = "saysei_v2_daily_reward";
 
     function load(key) {
         try { return localStorage.getItem(key); } catch (e) { return null; }
