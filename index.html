@@ -295,10 +295,12 @@ body {
 (function () {
     "use strict";
 
-    var VERSION = "2.3";
+    var VERSION = "2.4";
 
     // ---------- Ошибки: показываем прямо на экране ----------
     window.addEventListener("error", function (e) {
+        // "Script error." без номера строки приходит от чужих скриптов (Telegram, браузер), это не ошибка игры
+        if (e.message === "Script error." && !e.lineno) return;
         var box = document.getElementById("errorBanner");
         if (!box) return;
         box.style.display = "block";
