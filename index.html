@@ -238,6 +238,24 @@ body {
 }
 .ach-button:disabled { background: rgba(255,255,255,.1); color: #a99ab9; cursor: default; }
 
+.music-button {
+    display: none;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 50%;
+    background: rgba(20,12,32,.82);
+    color: #fff;
+    font-size: 19px;
+    cursor: pointer;
+}
+
 .version { margin-top: 26px; text-align: center; color: #5f5470; font-size: 11px; }
 
 .opening { animation: shake .16s infinite; }
@@ -259,6 +277,8 @@ body {
 </head>
 
 <body>
+<button class="music-button" id="musicButton" title="Музыка">🔇</button>
+
 <div class="container">
 
     <div class="error-banner" id="errorBanner"></div>
@@ -343,7 +363,7 @@ body {
 (function () {
     "use strict";
 
-    var VERSION = "2.5";
+    var VERSION = "2.6";
 
     // ---------- Ошибки: показываем прямо на экране ----------
     window.addEventListener("error", function (e) {
@@ -361,6 +381,7 @@ body {
     var KEY_DAILY = "saysei_v2_daily_reward";
     var KEY_BONUS = "saysei_v2_bonus_at";
     var KEY_ACH = "saysei_v2_achievements";
+    var KEY_MUSIC = "saysei_v2_music";
 
     function load(key) {
         try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -864,6 +885,61 @@ body {
         updateProfile();
     }
 
+    // ---------- Фоновая музыка (файл: audio/music.mp3) ----------
+    var music = null;
+    var musicOn = false;
+
+    function updateMusicButton() {
+        $("musicButton").textContent = musicOn ? "🔊" : "🔇";
+    }
+
+    function playMusic() {
+        if (!music) return;
+        var p = music.play();
+        if (p && p.catch) p.catch(function () {});
+    }
+
+    function toggleMusic() {
+        musicOn = !musicOn;
+        store(KEY_MUSIC, musicOn ? "on" : "off");
+        updateMusicButton();
+
+        if (musicOn) playMusic();
+        else if (music) music.pause();
+    }
+
+    function initMusic() {
+        if (typeof Audio === "undefined") return;
+
+        musicOn = load(KEY_MUSIC) === "on";
+
+        music = new Audio();
+        music.loop = true;
+        music.volume = 0.35;
+        music.preload = "metadata";
+
+        // Кнопка появится, только если файл музыки реально найден
+        music.addEventListener("loadedmetadata", function () {
+            $("musicButton").style.display = "flex";
+            updateMusicButton();
+        });
+
+        music.src = "audio/music.mp3";
+
+        $("musicButton").addEventListener("click", toggleMusic);
+
+        // Телефон разрешает звук только после касания: при первом касании продолжаем музыку
+        document.addEventListener("click", function () {
+            if (musicOn && music.paused && music.readyState > 0) playMusic();
+        });
+
+        // Свернули игру — пауза, вернулись — продолжаем
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) music.pause();
+            else if (musicOn && music.readyState > 0) playMusic();
+        });
+    }
+
     // ---------- Запуск ----------
     function init() {
         loadState();
@@ -886,6 +962,7 @@ body {
         updateDaily();
 
         updateBonus();
+        initMusic();
         setInterval(function () { updateDaily(); updateBonus(); }, 1000);
     }
 
