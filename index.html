@@ -180,6 +180,24 @@ body {
     cursor: pointer;
 }
 
+.card-icon img {
+    display: block;
+    width: 100%;
+    max-width: 190px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+.collection-icon img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
 .version { margin-top: 26px; text-align: center; color: #5f5470; font-size: 11px; }
 
 .opening { animation: shake .16s infinite; }
@@ -277,7 +295,7 @@ body {
 (function () {
     "use strict";
 
-    var VERSION = "2.1";
+    var VERSION = "2.3";
 
     // ---------- Ошибки: показываем прямо на экране ----------
     window.addEventListener("error", function (e) {
@@ -308,22 +326,22 @@ body {
     var CARDS = [
         { id: 1,  name: "SaySei",        rarity: "MYTHIC",    chance: 0.05,  icon: "🌙", role: "Главная героиня" },
         { id: 2,  name: "iseedeadsouls", rarity: "MYTHIC",    chance: 0.01,  icon: "👁️", role: "Создатель вселенной" },
-        { id: 3,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "⚪", role: "Обычная SaySei" },
-        { id: 4,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "⚪", role: "Обычная SaySei" },
-        { id: 5,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "⚪", role: "Обычная SaySei" },
-        { id: 6,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🟢", role: "Необычная SaySei" },
-        { id: 7,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🟢", role: "Необычная SaySei" },
-        { id: 8,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🟢", role: "Необычная SaySei" },
-        { id: 9,  name: "SaySei",        rarity: "RARE",      chance: 1.66,  icon: "🔵", role: "Редкая SaySei" },
-        { id: 10, name: "SaySei",        rarity: "RARE",      chance: 1.66,  icon: "🔵", role: "Редкая SaySei" },
-        { id: 11, name: "SaySei",        rarity: "RARE",      chance: 1.68,  icon: "🔵", role: "Редкая SaySei" },
-        { id: 12, name: "SaySei",        rarity: "EPIC",      chance: 0.44,  icon: "🟣", role: "Эпическая SaySei" },
-        { id: 13, name: "SaySei",        rarity: "EPIC",      chance: 0.44,  icon: "🟣", role: "Эпическая SaySei" },
-        { id: 14, name: "SaySei",        rarity: "EPIC",      chance: 0.45,  icon: "🟣", role: "Эпическая SaySei" },
-        { id: 15, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "🟡", role: "Легендарная SaySei" },
-        { id: 16, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "🟡", role: "Легендарная SaySei" },
-        { id: 17, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "🟡", role: "Легендарная SaySei" },
-        { id: 18, name: "SaySei",        rarity: "MYTHIC",    chance: 0.01,  icon: "🔴", role: "Мифическая SaySei" }
+        { id: 3,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "🤍", role: "Обычная SaySei" },
+        { id: 4,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "🕊️", role: "Обычная SaySei" },
+        { id: 5,  name: "SaySei",        rarity: "COMMON",    chance: 19.98, icon: "☁️", role: "Обычная SaySei" },
+        { id: 6,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🍀", role: "Необычная SaySei" },
+        { id: 7,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🌿", role: "Необычная SaySei" },
+        { id: 8,  name: "SaySei",        rarity: "UNCOMMON",  chance: 8.33,  icon: "🍃", role: "Необычная SaySei" },
+        { id: 9,  name: "SaySei",        rarity: "RARE",      chance: 1.66,  icon: "💎", role: "Редкая SaySei" },
+        { id: 10, name: "SaySei",        rarity: "RARE",      chance: 1.66,  icon: "🌊", role: "Редкая SaySei" },
+        { id: 11, name: "SaySei",        rarity: "RARE",      chance: 1.68,  icon: "🦋", role: "Редкая SaySei" },
+        { id: 12, name: "SaySei",        rarity: "EPIC",      chance: 0.44,  icon: "🔮", role: "Эпическая SaySei" },
+        { id: 13, name: "SaySei",        rarity: "EPIC",      chance: 0.44,  icon: "🌌", role: "Эпическая SaySei" },
+        { id: 14, name: "SaySei",        rarity: "EPIC",      chance: 0.45,  icon: "😈", role: "Эпическая SaySei" },
+        { id: 15, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "👑", role: "Легендарная SaySei" },
+        { id: 16, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "⚡", role: "Легендарная SaySei" },
+        { id: 17, name: "SaySei",        rarity: "LEGENDARY", chance: 0.12,  icon: "🌟", role: "Легендарная SaySei" },
+        { id: 18, name: "SaySei",        rarity: "MYTHIC",    chance: 0.01,  icon: "🩸", role: "Мифическая SaySei" }
     ];
 
     var PACKS = {
@@ -407,6 +425,16 @@ body {
         return pool[pool.length - 1];
     }
 
+    // ---------- Картинка карты (если файла нет — показываем смайлик) ----------
+    function setArt(box, card) {
+        box.textContent = "";
+        var img = document.createElement("img");
+        img.alt = card.role;
+        img.onerror = function () { box.textContent = card.icon; };
+        img.src = "images/cards/" + String(card.id).padStart(3, "0") + ".jpg";
+        box.appendChild(img);
+    }
+
     // ---------- Интерфейс ----------
     function updateCoins() {
         $("coins").textContent = coins;
@@ -439,7 +467,7 @@ body {
 
             var icon = document.createElement("div");
             icon.className = "collection-icon";
-            icon.textContent = card.icon;
+            setArt(icon, card);
 
             var name = document.createElement("div");
             name.className = "collection-name " + card.rarity.toLowerCase();
@@ -568,7 +596,7 @@ body {
                 var card = picked.card;
                 var percent = total ? (picked.weight / total) * 100 : 0;
 
-                $("cardIcon").textContent = card.icon;
+                setArt($("cardIcon"), card);
                 $("cardId").textContent = "#" + String(card.id).padStart(3, "0");
                 $("cardRarity").textContent = card.rarity;
                 $("cardRarity").className = "card-rarity " + card.rarity.toLowerCase();
