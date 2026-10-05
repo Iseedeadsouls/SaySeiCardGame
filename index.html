@@ -198,6 +198,46 @@ body {
     border-radius: 12px;
 }
 
+.sell-button {
+    width: 100%;
+    margin-top: 9px;
+    padding: 8px 6px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(241,199,91,.18);
+    color: #f1c75b;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.ach-list { display: grid; gap: 9px; }
+.ach-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.08);
+}
+.ach-info { text-align: left; }
+.ach-title { font-size: 14px; font-weight: 900; }
+.ach-sub { margin-top: 3px; color: #a99ab9; font-size: 11px; }
+.ach-button {
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 10px;
+    padding: 9px 11px;
+    background: #f1c75b;
+    color: #241800;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.ach-button:disabled { background: rgba(255,255,255,.1); color: #a99ab9; cursor: default; }
+
 .version { margin-top: 26px; text-align: center; color: #5f5470; font-size: 11px; }
 
 .opening { animation: shake .16s infinite; }
@@ -254,6 +294,12 @@ body {
             <div class="daily-subtitle" id="dailyText">Забери 250 💰 раз в 24 часа</div>
             <button class="daily-button" id="dailyButton">ЗАБРАТЬ 250 💰</button>
         </div>
+
+        <div class="daily-box">
+            <div class="daily-title">⏰ БОНУС КАЖДЫЕ 4 ЧАСА</div>
+            <div class="daily-subtitle" id="bonusText">Забери 50 💰 раз в 4 часа</div>
+            <button class="daily-button" id="bonusButton">ЗАБРАТЬ 50 💰</button>
+        </div>
     </div>
 
     <div class="section" id="collectionSection">
@@ -279,6 +325,8 @@ body {
                 </div>
             </div>
         </div>
+        <div class="page-subtitle" style="margin-top:24px">🏆 ДОСТИЖЕНИЯ</div>
+        <div class="ach-list" id="achList"></div>
     </div>
 
     <div class="section" id="shopSection">
@@ -295,7 +343,7 @@ body {
 (function () {
     "use strict";
 
-    var VERSION = "2.4";
+    var VERSION = "2.5";
 
     // ---------- Ошибки: показываем прямо на экране ----------
     window.addEventListener("error", function (e) {
@@ -311,6 +359,8 @@ body {
     var KEY_COINS = "saysei_v2_coins";
     var KEY_COLLECTION = "saysei_v2_collection";
     var KEY_DAILY = "saysei_v2_daily_reward";
+    var KEY_BONUS = "saysei_v2_bonus_at";
+    var KEY_ACH = "saysei_v2_achievements";
 
     function load(key) {
         try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -324,6 +374,26 @@ body {
     var DAILY_REWARD = 250;
     var DAILY_COOLDOWN = 24 * 60 * 60 * 1000;
     var OPEN_DELAY = 1200;
+
+    var BONUS_REWARD = 50;
+    var BONUS_COOLDOWN = 4 * 60 * 60 * 1000;
+
+    // Сколько монет дают за ПРОДАЖУ одной повторной карты
+    var SELL_PRICES = {
+        COMMON: 20, UNCOMMON: 40, RARE: 100,
+        EPIC: 250, LEGENDARY: 600, MYTHIC: 1500
+    };
+
+    // Награды за достижения (получить можно один раз)
+    var ACHIEVEMENTS = [
+        { id: "all_common",    title: "Собери все обычные карты",     rarity: "COMMON",    reward: 100 },
+        { id: "all_uncommon",  title: "Собери все необычные карты",   rarity: "UNCOMMON",  reward: 200 },
+        { id: "all_rare",      title: "Собери все редкие карты",      rarity: "RARE",      reward: 400 },
+        { id: "all_epic",      title: "Собери все эпические карты",   rarity: "EPIC",      reward: 800 },
+        { id: "all_legendary", title: "Собери все легендарные карты", rarity: "LEGENDARY", reward: 1500 },
+        { id: "all_mythic",    title: "Собери все мифические карты",  rarity: "MYTHIC",    reward: 3000 },
+        { id: "all_cards",     title: "Вся коллекция SaySei",         rarity: null,        reward: 5000 }
+    ];
 
     var CARDS = [
         { id: 1,  name: "SaySei",        rarity: "MYTHIC",    chance: 0.05,  icon: "🌙", role: "Главная героиня" },
@@ -373,6 +443,8 @@ body {
     var coins = START_COINS;
     var collection = {};
     var dailyAt = 0;
+    var bonusAt = 0;
+    var claimedAch = [];
     var isOpening = false;
 
     function loadState() {
@@ -395,11 +467,20 @@ body {
         }
 
         dailyAt = Number(load(KEY_DAILY)) || 0;
+        bonusAt = Number(load(KEY_BONUS)) || 0;
+
+        try {
+            var ach = JSON.parse(load(KEY_ACH));
+            if (Array.isArray(ach)) claimedAch = ach;
+        } catch (e) {
+            claimedAch = [];
+        }
     }
 
     function saveState() {
         store(KEY_COINS, coins);
         store(KEY_COLLECTION, JSON.stringify(collection));
+        store(KEY_ACH, JSON.stringify(claimedAch));
     }
 
     // ---------- Элементы ----------
@@ -447,6 +528,7 @@ body {
         var unique = CARDS.filter(function (c) { return collection[c.id] > 0; }).length;
         $("profileCards").textContent = unique;
         $("profileCoins").textContent = coins;
+        renderAchievements();
     }
 
     function renderCollection() {
@@ -490,6 +572,17 @@ body {
             item.appendChild(name);
             item.appendChild(role);
             item.appendChild(count);
+
+            if (collection[card.id] > 1) {
+                var sell = document.createElement("button");
+                sell.className = "sell-button";
+                sell.textContent = "Продать дубль +" + SELL_PRICES[card.rarity] + " 💰";
+                sell.addEventListener("click", function () {
+                    sellDuplicate(card.id);
+                });
+                item.appendChild(sell);
+            }
+
             grid.appendChild(item);
         });
     }
@@ -659,6 +752,118 @@ body {
         updateDaily();
     }
 
+    // ---------- Бонус каждые 4 часа ----------
+    function updateBonus() {
+        var left = bonusAt + BONUS_COOLDOWN - Date.now();
+        var button = $("bonusButton");
+        var text = $("bonusText");
+
+        if (left > 0) {
+            button.disabled = true;
+            text.textContent = "Следующий бонус через " + formatTime(left);
+        } else {
+            button.disabled = false;
+            text.textContent = "Забери " + BONUS_REWARD + " 💰 раз в 4 часа";
+        }
+    }
+
+    function claimBonus() {
+        if (bonusAt + BONUS_COOLDOWN - Date.now() > 0) {
+            updateBonus();
+            return;
+        }
+
+        coins += BONUS_REWARD;
+        bonusAt = Date.now();
+
+        store(KEY_BONUS, bonusAt);
+        saveState();
+        updateCoins();
+        updateProfile();
+        updateBonus();
+    }
+
+    // ---------- Продажа повторных карт ----------
+    function sellDuplicate(cardId) {
+        var card = CARDS.filter(function (c) { return c.id === cardId; })[0];
+        var count = collection[cardId] || 0;
+
+        if (!card || count < 2) return;   // последнюю копию продать нельзя
+
+        collection[cardId] = count - 1;
+        coins += SELL_PRICES[card.rarity];
+
+        saveState();
+        updateCoins();
+        renderCollection();
+        updateProfile();
+    }
+
+    // ---------- Достижения ----------
+    function achProgress(a) {
+        var list = a.rarity
+            ? CARDS.filter(function (c) { return c.rarity === a.rarity; })
+            : CARDS;
+        var have = list.filter(function (c) { return collection[c.id] > 0; }).length;
+        return { have: have, total: list.length };
+    }
+
+    function renderAchievements() {
+        var box = $("achList");
+        box.innerHTML = "";
+
+        ACHIEVEMENTS.forEach(function (a) {
+            var pr = achProgress(a);
+            var done = claimedAch.indexOf(a.id) !== -1;
+            var ready = !done && pr.have >= pr.total;
+
+            var row = document.createElement("div");
+            row.className = "ach-item";
+
+            var info = document.createElement("div");
+            info.className = "ach-info";
+
+            var title = document.createElement("div");
+            title.className = "ach-title";
+            title.textContent = a.title;
+
+            var sub = document.createElement("div");
+            sub.className = "ach-sub";
+            sub.textContent = pr.have + " / " + pr.total + " • награда " + a.reward + " 💰";
+
+            info.appendChild(title);
+            info.appendChild(sub);
+
+            var button = document.createElement("button");
+            button.className = "ach-button";
+            button.disabled = !ready;
+            button.textContent = done ? "✓ ПОЛУЧЕНО" : (ready ? "ЗАБРАТЬ" : "🔒");
+            button.addEventListener("click", function () {
+                claimAchievement(a.id);
+            });
+
+            row.appendChild(info);
+            row.appendChild(button);
+            box.appendChild(row);
+        });
+    }
+
+    function claimAchievement(id) {
+        var a = ACHIEVEMENTS.filter(function (x) { return x.id === id; })[0];
+        if (!a) return;
+        if (claimedAch.indexOf(id) !== -1) return;
+
+        var pr = achProgress(a);
+        if (pr.have < pr.total) return;
+
+        claimedAch.push(id);
+        coins += a.reward;
+
+        saveState();
+        updateCoins();
+        updateProfile();
+    }
+
     // ---------- Запуск ----------
     function init() {
         loadState();
@@ -670,6 +875,7 @@ body {
 
         $("openButton").addEventListener("click", function () { openPack("normal"); });
         $("dailyButton").addEventListener("click", claimDaily);
+        $("bonusButton").addEventListener("click", claimBonus);
 
         $("version").textContent = "SaySei CardUniverse • версия " + VERSION;
 
@@ -679,7 +885,8 @@ body {
         updateProfile();
         updateDaily();
 
-        setInterval(updateDaily, 1000);
+        updateBonus();
+        setInterval(function () { updateDaily(); updateBonus(); }, 1000);
     }
 
     init();
